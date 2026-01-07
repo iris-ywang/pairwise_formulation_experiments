@@ -1,8 +1,10 @@
+import time
+
 import numpy as np
 
 from pairwise_formulation.pairwise_data import PairwiseDataInfo
 from pairwise_formulation.pairwise_model import PairwiseModel, build_ml_model
-from pairwise_formulation.pa_basics.rating import rating_elo, rating_sbbr
+from pairwise_formulation.pa_basics.rating import rating_elo, rating_sbbr, rating_trueskill
 from pairwise_formulation.evaluations.extrapolation_evaluation import ExtrapolationEvaluation
 from pairwise_formulation.evaluations.stock_return_evaluation import calculate_returns
 
@@ -63,7 +65,7 @@ def metrics_evaluation(y_true, y_predict):
 def results_of_pairwise_combinations(
     pairwise_model: PairwiseModel,
     if_rank_with_dist: bool,
-    rank_method=rating_elo,
+    rank_method=rating_trueskill,
     percentage_of_top_samples=0.1,
 ):
     # Extrapolation performance evaluation:
@@ -136,16 +138,20 @@ def run_per_dataset(
     pairwise_data = PairwiseDataInfo(
         train_set, test_set, target_value_col_name=target_value_col_name
     )
+
+    pa_start_time = time.time()
     pairwise_model = PairwiseModel(
         pairwise_data_info=pairwise_data,
         ML_cls=ML_cls,
         ML_reg=ML_reg,
     ).fit()
+    pa_training_time = time.time() - pa_start_time
 
+    pa_eval_start_time = time.time()
     metrics_pa_v1, metrics_est_pa_v1 = results_of_pairwise_combinations(
         pairwise_model=pairwise_model,
         if_rank_with_dist=False,
-        rank_method=rating_elo,
+        rank_method=rating_trueskill,
         percentage_of_top_samples=percentage_of_top_samples,
     )
 
@@ -155,14 +161,18 @@ def run_per_dataset(
         rank_method=rating_sbbr,
         percentage_of_top_samples=percentage_of_top_samples,
     )
+    pa_eval_time = time.time() - pa_eval_start_time
 
     # standard approach
+    sa_start_time = time.time()
     _, y_sa_pred = build_ml_model(
         model=ML_reg,
         train_data=pairwise_data.train_ary,
         test_data=pairwise_data.test_ary
     )
+    sa_training_time = time.time() - sa_start_time
 
+    sa_eval_start_time = time.time()
     y_sa_pred_w_train = np.array(pairwise_data.y_true_all)
     y_sa_pred_w_train[pairwise_data.test_ids] = y_sa_pred
 
@@ -175,11 +185,21 @@ def run_per_dataset(
         pairwise_model.pairwise_data_info.test_ary[:, 0],
         y_sa_pred
     )
+    sa_eval_time = time.time() - sa_eval_start_time
 
     metrics_per_fold = (
         [metrics_sa] + metrics_pa_v1 + metrics_pa_v2 +
         [metrics_est_sa] + [metrics_est_pa_v2]
     )
+
+    training_time_log = "training_time_log2.txt"
+    with open(training_time_log, "a") as time_log_file:
+        #training_size,pa_training_time,pa_eval_time,sa_training_time,sa_eval_time
+        time_log_file.write(
+            f"{len(train_set)},{pa_training_time},{pa_eval_time},{sa_training_time},{sa_eval_time}\n"
+        )
+        time_log_file.flush()
+
     return metrics_per_fold
 
 
@@ -240,7 +260,7 @@ def run_per_stock_dataset(
     pred_true_return_list.append(pred_return_sa)
 
     y_ranking_c2 = pairwise_model.predict(
-        ranking_method=rating_elo,
+        ranking_method=rating_trueskill,
         ranking_input_type="c2",
         if_sbbr_dist=False,
     )
@@ -253,7 +273,7 @@ def run_per_stock_dataset(
     pred_true_return_list.append(pred_return_c2)
 
     y_ranking_c2_c3 = pairwise_model.predict(
-        ranking_method=rating_elo,
+        ranking_method=rating_trueskill,
         ranking_input_type="c2_c3",
         if_sbbr_dist=False,
     )
@@ -266,7 +286,7 @@ def run_per_stock_dataset(
     pred_true_return_list.append(pred_return_c2_c3)
 
     y_ranking_c1_c2_c3 = pairwise_model.predict(
-        ranking_method=rating_elo,
+        ranking_method=rating_trueskill,
         ranking_input_type="c1_c2_c3",
         if_sbbr_dist=False,
     )

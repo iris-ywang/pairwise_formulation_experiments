@@ -11,6 +11,7 @@ from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 
 warnings.filterwarnings("ignore")
 
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 if __name__ == '__main__':
     root_dir = os.getcwd()
@@ -19,7 +20,7 @@ if __name__ == '__main__':
     ).sort_values(by=["N(sample)"])
 
     output_dir = root_dir + "/output/boolean_chembl/"
-    results_filename = "boolean_chembl_rf_elo1.npy"
+    results_filename = "boolean_chembl_rf_trueskill1.npy"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -34,6 +35,14 @@ if __name__ == '__main__':
         all_metrics = []
 
     count = 0
+
+    tally = {
+        50: 0,
+        100: 0,
+        200: 0,
+        300: 0,
+        400: 0,
+    }
     for file in range(len(chembl_info)):
         count += 1
         if count <= existing_count:
@@ -48,6 +57,35 @@ if __name__ == '__main__':
             logging.warning("Cannot build model with only one target value for Dataset " + filename)
             logging.warning(f"Skip Dataset {filename}")
             continue
+        if len(train_test) < 50:
+            logging.warning("Dataset " + filename + " is not watched in tally." )
+            logging.warning(f"Skip Dataset {filename}")
+            continue
+        if chembl_info.iloc[file]["Repetition Rate"] > 0.15:
+            logging.warning("Dataset " + filename + " has too high repetition rate." )
+            logging.warning(f"Skip Dataset {filename}")
+            continue
+        if len(str(len(train_test))) == 3:
+            tally_key = int(str(len(train_test))[0] + "00")
+        elif len(str(len(train_test))) == 2:
+            tally_key = 50
+        else:
+            continue
+        if tally_key not in tally.keys():
+            logging.warning("Dataset " + filename + " size not in tally keys." )
+            logging.warning(f"Skip Dataset {filename}")
+            continue
+        if tally_key < 300:
+            if tally[tally_key] >= 20:
+                logging.warning("Already have 20 datasets of size " + str(len(train_test)) )
+                logging.warning(f"Skip Dataset {filename}")
+                continue
+        else:
+            if tally[tally_key] >= 5:
+                logging.warning("Already have 5 datasets of size " + str(len(train_test)) )
+                logging.warning(f"Skip Dataset {filename}")
+                continue
+        tally[tally_key] += 1
 
         train_test_splits_dict = kfold_splits(train_test=train_test, fold=10)
 
