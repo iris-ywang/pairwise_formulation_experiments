@@ -36,13 +36,6 @@ if __name__ == '__main__':
 
     count = 0
 
-    tally = {
-        50: 0,
-        100: 0,
-        200: 0,
-        300: 0,
-        400: 0,
-    }
     for file in range(len(chembl_info)):
         count += 1
         if count <= existing_count:
@@ -57,7 +50,7 @@ if __name__ == '__main__':
             logging.warning("Cannot build model with only one target value for Dataset " + filename)
             logging.warning(f"Skip Dataset {filename}")
             continue
-        if len(train_test) < 50:
+        if len(train_test) < 440 or len(train_test) > 500:
             logging.warning("Dataset " + filename + " is not watched in tally." )
             logging.warning(f"Skip Dataset {filename}")
             continue
@@ -65,27 +58,6 @@ if __name__ == '__main__':
             logging.warning("Dataset " + filename + " has too high repetition rate." )
             logging.warning(f"Skip Dataset {filename}")
             continue
-        if len(str(len(train_test))) == 3:
-            tally_key = int(str(len(train_test))[0] + "00")
-        elif len(str(len(train_test))) == 2:
-            tally_key = 50
-        else:
-            continue
-        if tally_key not in tally.keys():
-            logging.warning("Dataset " + filename + " size not in tally keys." )
-            logging.warning(f"Skip Dataset {filename}")
-            continue
-        if tally_key < 300:
-            if tally[tally_key] >= 20:
-                logging.warning("Already have 20 datasets of size " + str(len(train_test)) )
-                logging.warning(f"Skip Dataset {filename}")
-                continue
-        else:
-            if tally[tally_key] >= 5:
-                logging.warning("Already have 5 datasets of size " + str(len(train_test)) )
-                logging.warning(f"Skip Dataset {filename}")
-                continue
-        tally[tally_key] += 1
 
         train_test_splits_dict = kfold_splits(train_test=train_test, fold=10)
 
