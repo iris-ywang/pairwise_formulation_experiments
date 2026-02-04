@@ -5,6 +5,8 @@ import numpy as np
 import os
 import warnings
 
+from sklearn.svm import SVR
+
 from pairwise_formulation.pa_basics.import_data import dataset, kfold_splits
 from run_experiments.run_utils import run
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
@@ -19,7 +21,7 @@ if __name__ == '__main__':
     ).sort_values(by=["N(sample)"])
 
     output_dir = root_dir + "/output/boolean_chembl/"
-    results_filename = "boolean_chembl_rf_elo1.npy"
+    results_filename = "boolean_chembl_svm_sbbr1.npy"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -48,13 +50,22 @@ if __name__ == '__main__':
             logging.warning("Cannot build model with only one target value for Dataset " + filename)
             logging.warning(f"Skip Dataset {filename}")
             continue
+        if chembl_info.iloc[file]["Repetition Rate"] > 0.15:
+            logging.warning("Dataset " + filename + " has too high repetition rate." )
+            logging.warning(f"Skip Dataset {filename}")
+            continue
+        if chembl_info.iloc[file]["N(sample)"] < 50 or chembl_info.iloc[file]["N(sample)"] > 500:
+            logging.warning("Dataset " + filename + " too big or small." )
+            logging.warning(f"Skip Dataset {filename}")
+            continue
 
-        train_test_splits_dict = kfold_splits(train_test=train_test, fold=10)
+
+        train_test_splits_dict = kfold_splits(train_test=train_test, fold=5)
 
         metrics_per_dataset = run(
             train_test_splits_dict=train_test_splits_dict,
-            ML_cls=RandomForestClassifier(random_state=1, n_jobs=-1),
-            ML_reg=RandomForestRegressor(random_state=1, n_jobs=-1),
+            ML_cls=None,
+            ML_reg=SVR(),
             percentage_of_top_samples=0.1,  # top-performing as in top 10%
         )
         all_metrics.append(metrics_per_dataset)

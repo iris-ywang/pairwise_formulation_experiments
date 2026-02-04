@@ -2,7 +2,7 @@ import numpy as np
 
 from pairwise_formulation.pairwise_data import PairwiseDataInfo
 from pairwise_formulation.pairwise_model import PairwiseModel, build_ml_model
-from pairwise_formulation.pa_basics.rating import rating_elo, rating_sbbr
+from pairwise_formulation.pa_basics.rating import rating_elo, rating_sbbr, rating_trueskill
 from pairwise_formulation.evaluations.extrapolation_evaluation import ExtrapolationEvaluation
 from pairwise_formulation.evaluations.stock_return_evaluation import calculate_returns
 
@@ -63,7 +63,7 @@ def metrics_evaluation(y_true, y_predict):
 def results_of_pairwise_combinations(
     pairwise_model: PairwiseModel,
     if_rank_with_dist: bool,
-    rank_method=rating_elo,
+    rank_method=rating_trueskill,
     percentage_of_top_samples=0.1,
 ):
     # Extrapolation performance evaluation:
@@ -144,8 +144,8 @@ def run_per_dataset(
 
     metrics_pa_v1, metrics_est_pa_v1 = results_of_pairwise_combinations(
         pairwise_model=pairwise_model,
-        if_rank_with_dist=False,
-        rank_method=rating_elo,
+        if_rank_with_dist=True,
+        rank_method=rating_sbbr,
         percentage_of_top_samples=percentage_of_top_samples,
     )
 
@@ -240,7 +240,7 @@ def run_per_stock_dataset(
     pred_true_return_list.append(pred_return_sa)
 
     y_ranking_c2 = pairwise_model.predict(
-        ranking_method=rating_elo,
+        ranking_method=rating_trueskill,
         ranking_input_type="c2",
         if_sbbr_dist=False,
     )
@@ -253,7 +253,7 @@ def run_per_stock_dataset(
     pred_true_return_list.append(pred_return_c2)
 
     y_ranking_c2_c3 = pairwise_model.predict(
-        ranking_method=rating_elo,
+        ranking_method=rating_trueskill,
         ranking_input_type="c2_c3",
         if_sbbr_dist=False,
     )
@@ -266,7 +266,7 @@ def run_per_stock_dataset(
     pred_true_return_list.append(pred_return_c2_c3)
 
     y_ranking_c1_c2_c3 = pairwise_model.predict(
-        ranking_method=rating_elo,
+        ranking_method=rating_trueskill,
         ranking_input_type="c1_c2_c3",
         if_sbbr_dist=False,
     )
