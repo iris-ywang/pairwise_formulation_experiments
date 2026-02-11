@@ -12,6 +12,7 @@ from run_experiments.run_utils import run
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 
 warnings.filterwarnings("ignore")
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 
 if __name__ == '__main__':
@@ -37,12 +38,8 @@ if __name__ == '__main__':
 
     count = 0
     for file in range(len(chembl_info)):
-        count += 1
-        if count <= existing_count:
-            continue
 
         filename = chembl_info.iloc[file]["File name"]
-        logging.info(f"On Dataset No. {count}, filename: {filename}")
         data_folder = os.getcwd() + "/data/qsar_data_unsorted/"
         train_test = dataset(data_folder + filename, shuffle_state=1)
 
@@ -59,6 +56,10 @@ if __name__ == '__main__':
             logging.warning(f"Skip Dataset {filename}")
             continue
 
+        count += 1
+        if count <= existing_count:
+            continue
+        logging.info(f"On Dataset No. {count}, filename: {filename}")
 
         train_test_splits_dict = kfold_splits(train_test=train_test, fold=5)
 
