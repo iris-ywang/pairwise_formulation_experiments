@@ -150,7 +150,7 @@ def run_per_dataset(
     pa_eval_start_time = time.time()
     metrics_pa_v1, metrics_est_pa_v1 = results_of_pairwise_combinations(
         pairwise_model=pairwise_model,
-        if_rank_with_dist=False,
+        if_rank_with_dist=True,
         rank_method=rating_sbbr,
         percentage_of_top_samples=percentage_of_top_samples,
     )
