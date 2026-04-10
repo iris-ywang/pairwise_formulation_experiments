@@ -16,11 +16,11 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 if __name__ == '__main__':
     root_dir = os.getcwd()
     chembl_info = pd.read_csv(
-        root_dir + "/data/boolean_chembl_datasets_info.csv"
-    ).sort_values(by=["N(sample)"])
+        root_dir + "/data/boolean_chembl_datasets_info.csv")
+    # ).sort_values(by=["N(sample)"])
 
     output_dir = root_dir + "/output/boolean_chembl/"
-    results_filename = "boolean_chembl_rf_trueskill1.npy"
+    results_filename = "boolean_chembl_rf_trueskil_plz_delete.npy"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -85,9 +85,10 @@ if __name__ == '__main__':
                 logging.warning("Already have 5 datasets of size " + str(len(train_test)) )
                 logging.warning(f"Skip Dataset {filename}")
                 continue
+        logging.info(f"Dataset " + filename + f" is added to the tally at tally key of {tally_key}." )
         tally[tally_key] += 1
 
-        train_test_splits_dict = kfold_splits(train_test=train_test, fold=10)
+        train_test_splits_dict = kfold_splits(train_test=train_test, fold=5)
 
         metrics_per_dataset = run(
             train_test_splits_dict=train_test_splits_dict,

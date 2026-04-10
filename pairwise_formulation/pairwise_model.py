@@ -1,5 +1,6 @@
 import numpy as np
 from itertools import chain
+import logging
 
 from .pairwise_data import PairwiseDataInfo, PairwiseValues
 from .pa_basics.all_pairs import pair_by_pair_id_per_feature
@@ -9,7 +10,7 @@ class PairwiseModel():
 
     def __init__(self,
                  pairwise_data_info: PairwiseDataInfo,
-                 ML_cls,
+                 ML_cls=None,
                  ML_reg=None,
                  pairing_method=pair_by_pair_id_per_feature,
                  search_model=None,
@@ -35,6 +36,7 @@ class PairwiseModel():
         self.Y_values.Y_pa_c1_true = list(train_pairs[:, 0])
 
         if self.ML_reg is not None:
+            logging.info("Start training regression model.")
             trained_reg_model, _ = build_ml_model(
                 model=self.ML_reg,
                 train_data=train_pairs,
@@ -44,28 +46,31 @@ class PairwiseModel():
             self.trained_reg_model = trained_reg_model
             self.Y_values.Y_pa_c1_nume = list(train_pairs[:, 0])
 
-        train_pairs_for_sign = np.array(train_pairs)
-        # Using binary signs:
-        train_pairs_for_sign[:, 0] = 2 * (train_pairs_for_sign[:, 0] >= 0) - 1
+        if self.ML_cls is not None:
+            logging.info("Start training regression model.")
+            train_pairs_for_sign = np.array(train_pairs)
+            # Using binary signs:
+            train_pairs_for_sign[:, 0] = 2 * (train_pairs_for_sign[:, 0] >= 0) - 1
 
-        trained_cls_model, _ = build_ml_model(
-            model=self.ML_cls,
-            train_data=train_pairs_for_sign,
-            search_model=self.search_model,
-            test_data=None
-        )
-        self.trained_cls_model = trained_cls_model
-        self.Y_values.Y_pa_c1_sign = list(train_pairs_for_sign[:, 0])
+            trained_cls_model, _ = build_ml_model(
+                model=self.ML_cls,
+                train_data=train_pairs_for_sign,
+                search_model=self.search_model,
+                test_data=None
+            )
+            self.trained_cls_model = trained_cls_model
+            self.Y_values.Y_pa_c1_sign = list(train_pairs_for_sign[:, 0])
         return self
 
     def predict(self, ranking_method=rating_elo, ranking_input_type='c2', if_sbbr_dist=False):
-        if self.Y_values.Y_pa_c2_sign is None:
-            self.Y_values.Y_pa_c2_sign_true, self.Y_values.Y_pa_c2_sign = \
-                self._fit_sign(self.pairwise_data_info.c2_test_pair_ids)
+        if self.ML_cls is not None:
+            if self.Y_values.Y_pa_c2_sign is None:
+                self.Y_values.Y_pa_c2_sign_true, self.Y_values.Y_pa_c2_sign = \
+                    self._fit_sign(self.pairwise_data_info.c2_test_pair_ids)
 
-        if self.Y_values.Y_pa_c3_sign is None:
-            self.Y_values.Y_pa_c3_sign_true, self.Y_values.Y_pa_c3_sign = \
-                self._fit_sign(self.pairwise_data_info.c3_test_pair_ids)
+            if self.Y_values.Y_pa_c3_sign is None:
+                self.Y_values.Y_pa_c3_sign_true, self.Y_values.Y_pa_c3_sign = \
+                    self._fit_sign(self.pairwise_data_info.c3_test_pair_ids)
 
         if self.trained_reg_model is not None:
             if self.Y_values.Y_pa_c2_nume is None:
@@ -76,13 +81,17 @@ class PairwiseModel():
                 self.Y_values.Y_pa_c3_nume_true, self.Y_values.Y_pa_c3_nume = \
                     self._fit_dist(self.pairwise_data_info.c3_test_pair_ids)
 
-        y_ranking_score_test = self.rank(
-            ranking_method=ranking_method,
-            ranking_input_type=ranking_input_type,
-            if_sbbr_dist=if_sbbr_dist
-        )
+        if self.trained_reg_model or self.trained_cls_model:
+            y_ranking_score_test = self.rank(
+                ranking_method=ranking_method,
+                ranking_input_type=ranking_input_type,
+                if_sbbr_dist=if_sbbr_dist
+            )
 
-        return y_ranking_score_test
+            return y_ranking_score_test
+        else:
+            raise ValueError("No trained model available for prediction.")
+
 
     def rank(self, ranking_method, ranking_input_type, if_sbbr_dist=False):
         """ranking_inputs: sub-list of ['c2', 'c3', 'c2_c3', 'c1_c2_c3']"""
@@ -91,6 +100,7 @@ class PairwiseModel():
         for pair_type in combi_types:
 
             if not if_sbbr_dist:
+                assert self.trained_cls_model is not None
                 Y += list(getattr(self.Y_values, f"Y_pa_{pair_type}_sign"))
             else:
                 assert self.trained_reg_model is not None

@@ -142,7 +142,7 @@ def run_per_dataset(
     pa_start_time = time.time()
     pairwise_model = PairwiseModel(
         pairwise_data_info=pairwise_data,
-        ML_cls=ML_cls,
+        # ML_cls=ML_cls,
         ML_reg=ML_reg,
     ).fit()
     pa_training_time = time.time() - pa_start_time
@@ -192,7 +192,7 @@ def run_per_dataset(
         [metrics_est_sa] + [metrics_est_pa_v2]
     )
 
-    training_time_log = "training_time_log2.txt"
+    training_time_log = "training_time_log_rfr_5f.txt"
     with open(training_time_log, "a") as time_log_file:
         #training_size,pa_training_time,pa_eval_time,sa_training_time,sa_eval_time
         time_log_file.write(
@@ -218,6 +218,7 @@ def run(
                 target_value_col_name=target_value_col_name,
             )
             metrics_per_dataset.append(metrics_per_fold)
+            if fold_id == 3: break
         return metrics_per_dataset
 
 
