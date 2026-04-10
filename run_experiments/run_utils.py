@@ -151,7 +151,7 @@ def run_per_dataset(
     metrics_pa_v1, metrics_est_pa_v1 = results_of_pairwise_combinations(
         pairwise_model=pairwise_model,
         if_rank_with_dist=False,
-        rank_method=rating_trueskill,
+        rank_method=rating_sbbr,
         percentage_of_top_samples=percentage_of_top_samples,
     )
 
