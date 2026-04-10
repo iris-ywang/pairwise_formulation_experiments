@@ -192,7 +192,7 @@ def run_per_dataset(
         [metrics_est_sa] + [metrics_est_pa_v2]
     )
 
-    training_time_log = "training_time_log_rfr_5f.txt"
+    training_time_log = "training_time_log_rfr_5f_reverse_order.txt"
     with open(training_time_log, "a") as time_log_file:
         #training_size,pa_training_time,pa_eval_time,sa_training_time,sa_eval_time
         time_log_file.write(

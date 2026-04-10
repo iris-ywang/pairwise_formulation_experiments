@@ -16,8 +16,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 if __name__ == '__main__':
     root_dir = os.getcwd()
     chembl_info = pd.read_csv(
-        root_dir + "/data/boolean_chembl_datasets_info.csv")
-    # ).sort_values(by=["N(sample)"])
+        root_dir + "/data/boolean_chembl_datasets_info.csv"
+    ).sort_values(by=["N(sample)"], ascending=False)
 
     output_dir = root_dir + "/output/boolean_chembl/"
     results_filename = "boolean_chembl_rf_trueskil_plz_delete.npy"
@@ -76,12 +76,12 @@ if __name__ == '__main__':
             logging.warning(f"Skip Dataset {filename}")
             continue
         if tally_key < 300:
-            if tally[tally_key] >= 20:
+            if tally[tally_key] >= 40:
                 logging.warning("Already have 20 datasets of size " + str(len(train_test)) )
                 logging.warning(f"Skip Dataset {filename}")
                 continue
         else:
-            if tally[tally_key] >= 5:
+            if tally[tally_key] >= 10:
                 logging.warning("Already have 5 datasets of size " + str(len(train_test)) )
                 logging.warning(f"Skip Dataset {filename}")
                 continue
