@@ -93,8 +93,8 @@ if __name__ == '__main__':
 
         metrics_per_dataset = run(
             train_test_splits_dict=train_test_splits_dict,
-            ML_cls=SVC(random_state=1),
-            ML_reg=SVR(random_state=1),
+            ML_cls=SVC(),
+            ML_reg=SVR(),
             percentage_of_top_samples=0.1,  # top-performing as in top 10%
         )
         all_metrics.append(metrics_per_dataset)
