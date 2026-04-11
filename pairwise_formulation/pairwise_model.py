@@ -47,7 +47,7 @@ class PairwiseModel():
             self.Y_values.Y_pa_c1_nume = list(train_pairs[:, 0])
 
         if self.ML_cls is not None:
-            logging.info("Start training regression model.")
+            logging.info("Start training classification model.")
             train_pairs_for_sign = np.array(train_pairs)
             # Using binary signs:
             train_pairs_for_sign[:, 0] = 2 * (train_pairs_for_sign[:, 0] >= 0) - 1
