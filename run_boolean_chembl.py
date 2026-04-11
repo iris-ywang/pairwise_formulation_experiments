@@ -8,6 +8,7 @@ import warnings
 from pairwise_formulation.pa_basics.import_data import dataset, kfold_splits
 from run_experiments.run_utils import run
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.svm import SVR, SVC
 
 warnings.filterwarnings("ignore")
 
@@ -41,7 +42,7 @@ if __name__ == '__main__':
         100: 0,
         200: 0,
         300: 0,
-        400: 0,
+        # 400: 0,
     }
     for file in range(len(chembl_info)):
         count += 1
@@ -75,14 +76,14 @@ if __name__ == '__main__':
             logging.warning("Dataset " + filename + " size not in tally keys." )
             logging.warning(f"Skip Dataset {filename}")
             continue
-        if tally_key < 300:
-            if tally[tally_key] >= 20:
-                logging.warning("Already have 20 datasets of size " + str(len(train_test)) )
+        if tally_key < 200:
+            if tally[tally_key] >= 10:
+                logging.warning("Already have 10 datasets of size " + str(len(train_test)) )
                 logging.warning(f"Skip Dataset {filename}")
                 continue
         else:
-            if tally[tally_key] >= 5:
-                logging.warning("Already have 5 datasets of size " + str(len(train_test)) )
+            if tally[tally_key] >= 3:
+                logging.warning("Already have 3 datasets of size " + str(len(train_test)) )
                 logging.warning(f"Skip Dataset {filename}")
                 continue
         logging.info(f"Dataset " + filename + f" is added to the tally at tally key of {tally_key}." )
@@ -92,8 +93,8 @@ if __name__ == '__main__':
 
         metrics_per_dataset = run(
             train_test_splits_dict=train_test_splits_dict,
-            ML_cls=RandomForestClassifier(random_state=1, n_jobs=-1),
-            ML_reg=RandomForestRegressor(random_state=1, n_jobs=-1),
+            ML_cls=SVC(random_state=1),
+            ML_reg=SVR(random_state=1),
             percentage_of_top_samples=0.1,  # top-performing as in top 10%
         )
         all_metrics.append(metrics_per_dataset)
