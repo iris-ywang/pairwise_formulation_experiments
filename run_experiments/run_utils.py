@@ -142,8 +142,8 @@ def run_per_dataset(
     pa_start_time = time.time()
     pairwise_model = PairwiseModel(
         pairwise_data_info=pairwise_data,
-        ML_cls=ML_cls,
-        # ML_reg=ML_reg,
+        # ML_cls=ML_cls,
+        ML_reg=ML_reg,
     ).fit()
     pa_training_time = time.time() - pa_start_time
 
@@ -192,7 +192,7 @@ def run_per_dataset(
         [metrics_est_sa] + [metrics_est_pa_v2]
     )
 
-    training_time_log = "training_time_log_svc_5f.txt"
+    training_time_log = "training_time_log_svr_5f.txt"
     with open(training_time_log, "a") as time_log_file:
         #training_size,pa_training_time,pa_eval_time,sa_training_time,sa_eval_time
         time_log_file.write(
