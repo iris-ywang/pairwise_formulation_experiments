@@ -142,23 +142,23 @@ def run_per_dataset(
     pa_start_time = time.time()
     pairwise_model = PairwiseModel(
         pairwise_data_info=pairwise_data,
-        # ML_cls=ML_cls,
-        ML_reg=ML_reg,
+        ML_cls=ML_cls,
+        # ML_reg=ML_reg,
     ).fit()
     pa_training_time = time.time() - pa_start_time
 
     pa_eval_start_time = time.time()
     metrics_pa_v1, metrics_est_pa_v1 = results_of_pairwise_combinations(
         pairwise_model=pairwise_model,
-        if_rank_with_dist=True,
-        rank_method=rating_sbbr,
+        if_rank_with_dist=False,
+        rank_method=rating_trueskill,
         percentage_of_top_samples=percentage_of_top_samples,
     )
 
     metrics_pa_v2, metrics_est_pa_v2 = results_of_pairwise_combinations(
         pairwise_model=pairwise_model,
-        if_rank_with_dist=True,
-        rank_method=rating_sbbr,
+        if_rank_with_dist=False,
+        rank_method=rating_trueskill,
         percentage_of_top_samples=percentage_of_top_samples,
     )
     pa_eval_time = time.time() - pa_eval_start_time
@@ -192,7 +192,7 @@ def run_per_dataset(
         [metrics_est_sa] + [metrics_est_pa_v2]
     )
 
-    training_time_log = "training_time_log_svr_5f.txt"
+    training_time_log = "training_time_log_xgbc_5f.txt"
     with open(training_time_log, "a") as time_log_file:
         #training_size,pa_training_time,pa_eval_time,sa_training_time,sa_eval_time
         time_log_file.write(

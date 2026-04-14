@@ -8,6 +8,7 @@ import warnings
 from pairwise_formulation.pa_basics.import_data import dataset, kfold_splits
 from run_experiments.run_utils import run
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.ensemble import GradientBoostingRegressor, GradientBoostingClassifier
 from sklearn.svm import SVR, SVC
 
 warnings.filterwarnings("ignore")
@@ -93,8 +94,8 @@ if __name__ == '__main__':
 
         metrics_per_dataset = run(
             train_test_splits_dict=train_test_splits_dict,
-            ML_cls=SVC(),
-            ML_reg=SVR(),
+            ML_cls=GradientBoostingClassifier(random_state=1),
+            ML_reg=GradientBoostingRegressor(random_state=1),
             percentage_of_top_samples=0.1,  # top-performing as in top 10%
         )
         all_metrics.append(metrics_per_dataset)
